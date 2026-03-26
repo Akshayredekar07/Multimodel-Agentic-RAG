@@ -3,7 +3,6 @@ from __future__ import annotations
 import os
 import re
 import uuid
-from pathlib import Path
 
 import requests
 import streamlit as st
@@ -47,6 +46,15 @@ def fetch_models() -> dict:
     return response.json()
 
 
+def extract_error_detail(response: requests.Response) -> str:
+    try:
+        payload = response.json()
+    except ValueError:
+        return response.text or "Unknown request failure."
+    detail = payload.get("detail")
+    return detail if isinstance(detail, str) else str(detail or "Unknown request failure.")
+
+
 def refresh_backend_state() -> None:
     records = fetch_files()
     model_payload = fetch_models()
@@ -80,6 +88,26 @@ def upload_files_to_api(uploaded_files: list) -> list[dict]:
         response.raise_for_status()
         uploaded_records.append(response.json())
     return uploaded_records
+
+
+def delete_file_from_api(file_id: str) -> None:
+    response = requests.delete(f"{API_BASE_URL}/files/{file_id}", timeout=30)
+    if not response.ok:
+        raise RuntimeError(extract_error_detail(response))
+
+
+def remove_deleted_file_from_state(file_id: str) -> None:
+    st.session_state.draft_file_ids = [
+        current_file_id
+        for current_file_id in st.session_state.draft_file_ids
+        if current_file_id != file_id
+    ]
+    for thread in st.session_state.threads.values():
+        thread["file_ids"] = [
+            current_file_id
+            for current_file_id in thread.get("file_ids", [])
+            if current_file_id != file_id
+        ]
 
 
 def create_thread() -> str:
@@ -374,9 +402,6 @@ def render_assistant_message(message: dict) -> None:
                 )
                 st.markdown(f"**{source['filename']}**  \n{page_text}")
                 st.markdown(source["content"])
-                record = st.session_state.file_map.get(source["file_id"])
-                if record and record.get("is_image") and Path(record["path"]).exists():
-                    st.image(record["path"], caption=record["filename"], use_container_width=True)
 
 
 def parse_chat_value(value) -> tuple[str, list]:
@@ -475,6 +500,13 @@ current_thread = get_current_thread()
 if st.session_state.view_mode == "Documents":
     st.markdown("### Documents")
     st.caption("Manage uploaded files and choose what the active chat can search.")
+    documents_notice = st.session_state.pop("documents_notice", None)
+    if documents_notice:
+        notice_level, notice_message = documents_notice
+        if notice_level == "success":
+            st.success(notice_message)
+        else:
+            st.error(notice_message)
 
     current_use_all, current_file_ids = active_scope_values(current_thread)
     search_all_files = st.checkbox(
@@ -515,13 +547,34 @@ if st.session_state.view_mode == "Documents":
     if st.session_state.records:
         for record in st.session_state.records:
             with st.container(border=True):
-                st.markdown(f"**{record['filename']}**")
+                title_col, action_col = st.columns([0.78, 0.22], vertical_alignment="center")
+                with title_col:
+                    st.markdown(f"**{record['filename']}**")
+                with action_col:
+                    if st.button(
+                        "Delete",
+                        key=f"delete_{record['file_id']}",
+                        use_container_width=True,
+                    ):
+                        try:
+                            delete_file_from_api(record["file_id"])
+                        except Exception as exc:
+                            st.session_state.documents_notice = (
+                                "error",
+                                f"Could not delete {record['filename']}: {exc}",
+                            )
+                        else:
+                            remove_deleted_file_from_state(record["file_id"])
+                            refresh_backend_state()
+                            st.session_state.documents_notice = (
+                                "success",
+                                f"Deleted {record['filename']}.",
+                            )
+                        st.rerun()
                 status = "text extracted" if record["has_text"] else "stored only"
                 st.caption(
                     f"{record['size']} bytes | {status} | {record.get('chunk_count', 0)} chunks"
                 )
-                if record.get("is_image") and Path(record["path"]).exists():
-                    st.image(record["path"], caption=record["filename"], use_container_width=True)
     else:
         st.info("No uploaded documents yet.")
 
