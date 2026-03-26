@@ -44,3 +44,4 @@ run/*.json
 run/*.md
 
 /qdrant_storage/*
+/uploaded_files/*
