@@ -1,12 +1,9 @@
 
-
 import asyncio
 from langchain_core.tools import tool
 from model_providers import LLMFactory
 
 factory = LLMFactory()
-
-# ─── Math Tool ────────────────────────────────────────────────────────────────
 
 @tool
 def math_tool(operation: str, a: float, b: float) -> float:
@@ -32,7 +29,6 @@ def math_tool(operation: str, a: float, b: float) -> float:
         raise ValueError(f"Unknown operation '{operation}'. Use: add, subtract, multiply, divide")
 
 
-# ─── 1. Normal invoke ─────────────────────────────────────────────────────────
 
 def test_invoke():
     print("\n" + "─" * 50)
@@ -43,7 +39,6 @@ def test_invoke():
     print(response.content)
 
 
-# ─── 2. Streaming ─────────────────────────────────────────────────────────────
 
 def test_stream():
     print("\n" + "─" * 50)
@@ -55,8 +50,6 @@ def test_stream():
     print()
 
 
-# ─── 3. Async invoke ──────────────────────────────────────────────────────────
-
 async def test_ainvoke():
     print("\n" + "─" * 50)
     print("3. Async invoke")
@@ -66,7 +59,6 @@ async def test_ainvoke():
     print(response.content)
 
 
-# ─── 4. Async streaming ───────────────────────────────────────────────────────
 
 async def test_astream():
     print("\n" + "─" * 50)
@@ -78,13 +70,11 @@ async def test_astream():
     print()
 
 
-# ─── 5. Tool calling ──────────────────────────────────────────────────────────
-
 def test_tool_calling():
     print("\n" + "─" * 50)
     print("5. Tool calling")
     print("─" * 50)
-    llm = factory.get_llm("openai", model_name="gpt-4o", temperature=0)
+    llm = factory.get_llm("nvidia", model_name="moonshotai/kimi-k2-thinking", temperature=0)
     llm_with_tools = llm.bind_tools([math_tool])
 
     response = llm_with_tools.invoke("What is 25 multiplied by 4?")
@@ -99,14 +89,12 @@ def test_tool_calling():
         print("No tool calls made.")
 
 
-# ─── Run all ──────────────────────────────────────────────────────────────────
-
 async def main():
     # test_invoke()
     # test_stream()
-    await test_ainvoke()
+    # await test_ainvoke()
     # await test_astream()
-    # test_tool_calling()
+    test_tool_calling()
 
 
 if __name__ == "__main__":

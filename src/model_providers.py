@@ -1,9 +1,15 @@
 import logging
+import sys
 from abc import ABC, abstractmethod
+from pathlib import Path
 from typing import Optional, Literal
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain.chat_models import init_chat_model
 from langchain_cerebras import ChatCerebras
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
 from config import Config
 
@@ -28,7 +34,6 @@ class LLMProvider(ABC):
         self,
         model: str,
         temperature: float,
-        max_retries: int,
         max_tokens: Optional[int],
         timeout: Optional[int],
         base_url: Optional[str],
@@ -40,7 +45,6 @@ class LLMProvider(ABC):
         params = {
             "model": model,
             "temperature": temperature,
-            "max_retries": max_retries,
             **kwargs,
         }
         if max_tokens is not None:
@@ -74,7 +78,6 @@ class OpenAIProvider(LLMProvider):
         temperature: float = 0.7,
         max_tokens: Optional[int] = None,
         timeout: Optional[int] = None,
-        max_retries: int = 2,
         base_url: Optional[str] = None,
         configurable_fields: Optional[Literal["any"] | list[str] | tuple[str, ...]] = None,
         config_prefix: Optional[str] = None,
@@ -83,7 +86,7 @@ class OpenAIProvider(LLMProvider):
         model = model_name or "gpt-4o"
         api_key = self.get_api_key("OPENAI_API_KEY")
         params = self._build_params(
-            f"openai:{model}", temperature, max_retries,
+            f"openai:{model}", temperature,
             max_tokens, timeout, base_url, configurable_fields, config_prefix,
             api_key=api_key,
             **kwargs
@@ -98,7 +101,6 @@ class AnthropicProvider(LLMProvider):
         temperature: float = 0.7,
         max_tokens: Optional[int] = None,
         timeout: Optional[int] = None,
-        max_retries: int = 2,
         base_url: Optional[str] = None,
         configurable_fields: Optional[Literal["any"] | list[str] | tuple[str, ...]] = None,
         config_prefix: Optional[str] = None,
@@ -107,7 +109,7 @@ class AnthropicProvider(LLMProvider):
         model = model_name or "claude-sonnet-4-5-20250929"
         api_key = self.get_api_key("ANTHROPIC_API_KEY")
         params = self._build_params(
-            f"anthropic:{model}", temperature, max_retries,
+            f"anthropic:{model}", temperature,
             max_tokens, timeout, base_url, configurable_fields, config_prefix,
             api_key=api_key,
             **kwargs
@@ -122,7 +124,6 @@ class GeminiProvider(LLMProvider):
         temperature: float = 0.7,
         max_tokens: Optional[int] = None,
         timeout: Optional[int] = None,
-        max_retries: int = 2,
         base_url: Optional[str] = None,
         configurable_fields: Optional[Literal["any"] | list[str] | tuple[str, ...]] = None,
         config_prefix: Optional[str] = None,
@@ -131,7 +132,7 @@ class GeminiProvider(LLMProvider):
         model = model_name or "gemini-2.5-flash"
         api_key = self.get_api_key("GOOGLE_API_KEY")
         params = self._build_params(
-            f"google_genai:{model}", temperature, max_retries,
+            f"google_genai:{model}", temperature,
             max_tokens, timeout, base_url, configurable_fields, config_prefix,
             api_key=api_key,
             **kwargs
@@ -146,7 +147,6 @@ class GroqProvider(LLMProvider):
         temperature: float = 0.7,
         max_tokens: Optional[int] = None,
         timeout: Optional[int] = None,
-        max_retries: int = 2,
         base_url: Optional[str] = None,
         configurable_fields: Optional[Literal["any"] | list[str] | tuple[str, ...]] = None,
         config_prefix: Optional[str] = None,
@@ -155,7 +155,7 @@ class GroqProvider(LLMProvider):
         model = model_name or "llama-3.3-70b-versatile"
         api_key = self.get_api_key("GROQ_API_KEY")
         params = self._build_params(
-            f"groq:{model}", temperature, max_retries,
+            f"groq:{model}", temperature,
             max_tokens, timeout, base_url, configurable_fields, config_prefix,
             api_key=api_key,
             **kwargs
@@ -170,7 +170,6 @@ class OllamaProvider(LLMProvider):
         temperature: float = 0.7,
         max_tokens: Optional[int] = None,
         timeout: Optional[int] = None,
-        max_retries: int = 2,
         base_url: Optional[str] = None,
         configurable_fields: Optional[Literal["any"] | list[str] | tuple[str, ...]] = None,
         config_prefix: Optional[str] = None,
@@ -178,7 +177,7 @@ class OllamaProvider(LLMProvider):
     ) -> BaseChatModel:
         model = model_name or "llama3.2"
         params = self._build_params(
-            f"ollama:{model}", temperature, max_retries,
+            f"ollama:{model}", temperature,
             max_tokens, timeout, base_url, configurable_fields, config_prefix, **kwargs
         )
         return self._init("Ollama", model, params)
@@ -191,7 +190,6 @@ class NvidiaProvider(LLMProvider):
         temperature: float = 0.7,
         max_tokens: Optional[int] = None,
         timeout: Optional[int] = None,
-        max_retries: int = 2,
         base_url: Optional[str] = None,
         configurable_fields: Optional[Literal["any"] | list[str] | tuple[str, ...]] = None,
         config_prefix: Optional[str] = None,
@@ -200,7 +198,7 @@ class NvidiaProvider(LLMProvider):
         model = model_name or "meta/llama-3.3-70b-instruct"
         api_key = self.get_api_key("NVIDIA_API_KEY")
         params = self._build_params(
-            f"nvidia:{model}", temperature, max_retries,
+            f"nvidia:{model}", temperature,
             max_tokens, timeout, base_url, configurable_fields, config_prefix,
             api_key=api_key,
             **kwargs
@@ -217,7 +215,6 @@ class CerebrasProvider(LLMProvider):
         temperature: float = 0.7,
         max_tokens: Optional[int] = None,
         timeout: Optional[int] = None,
-        max_retries: int = 2,
         **kwargs,
     ) -> BaseChatModel:
         model = model_name or "llama-3.3-70b"
@@ -226,7 +223,6 @@ class CerebrasProvider(LLMProvider):
         params = {
             "model": model,
             "temperature": temperature,
-            "max_retries": max_retries,
             "api_key": api_key,
         }
         if max_tokens is not None:
@@ -251,7 +247,6 @@ class NeblusProvider(LLMProvider):
         temperature: float = 0.7,
         max_tokens: Optional[int] = None,
         timeout: Optional[int] = None,
-        max_retries: int = 2,
         configurable_fields: Optional[Literal["any"] | list[str] | tuple[str, ...]] = None,
         config_prefix: Optional[str] = None,
         **kwargs,
@@ -262,7 +257,6 @@ class NeblusProvider(LLMProvider):
         params = self._build_params(
             model=model,          
             temperature=temperature,
-            max_retries=max_retries,
             max_tokens=max_tokens,
             timeout=timeout,
             base_url="https://api.tokenfactory.nebius.com/v1", 
@@ -282,7 +276,6 @@ class OpenRouterProvider(LLMProvider):
         temperature: float = 0.7,
         max_tokens: Optional[int] = None,
         timeout: Optional[int] = None,
-        max_retries: int = 2,
         configurable_fields: Optional[Literal["any"] | list[str] | tuple[str, ...]] = None,
         config_prefix: Optional[str] = None,
         **kwargs,
@@ -291,7 +284,7 @@ class OpenRouterProvider(LLMProvider):
         api_key = self.get_api_key("OPENROUTER_API_KEY")
 
         params = self._build_params(
-            f"openai:{model}", temperature, max_retries,
+            f"openai:{model}", temperature,
             max_tokens, timeout,
             base_url="https://openrouter.ai/api/v1",
             configurable_fields=configurable_fields,
@@ -308,7 +301,6 @@ class HuggingFaceProvider(LLMProvider):
         temperature: float = 0.7,
         max_tokens: Optional[int] = None,
         timeout: Optional[int] = None,
-        max_retries: int = 2,
         base_url: Optional[str] = None,
         configurable_fields: Optional[Literal["any"] | list[str] | tuple[str, ...]] = None,
         config_prefix: Optional[str] = None,
@@ -317,7 +309,7 @@ class HuggingFaceProvider(LLMProvider):
         model = model_name or "HuggingFaceH4/zephyr-7b-beta"
         api_key = self.get_api_key("HUGGINGFACE_API_KEY")
         params = self._build_params(
-            f"huggingface:{model}", temperature, max_retries,
+            f"huggingface:{model}", temperature,
             max_tokens, timeout, base_url, configurable_fields, config_prefix,
             api_key=api_key,
             **kwargs
@@ -333,7 +325,6 @@ class VLLMProvider(LLMProvider):
         temperature: float = 0.7,
         max_tokens: Optional[int] = None,
         timeout: Optional[int] = None,
-        max_retries: int = 2,
         base_url: str = "http://localhost:8000/v1",   # vLLM default local server
         configurable_fields: Optional[Literal["any"] | list[str] | tuple[str, ...]] = None,
         config_prefix: Optional[str] = None,
@@ -341,7 +332,7 @@ class VLLMProvider(LLMProvider):
     ) -> BaseChatModel:
         model = model_name or "meta-llama/Llama-3-8b-instruct"
         params = self._build_params(
-            f"openai:{model}", temperature, max_retries,
+            f"openai:{model}", temperature,
             max_tokens, timeout, base_url, configurable_fields, config_prefix, **kwargs
         )
         return self._init("vLLM", model, params)
