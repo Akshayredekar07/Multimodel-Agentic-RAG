@@ -87,3 +87,20 @@ langchain-groq
 qdrant-client
 langchain-qdrant
 fastembed
+
+
+# ─── Core ─────────────────────────────────────────────────────────────────────
+langchain
+langchain-core
+python-dotenv
+
+# ─── Providers ────────────────────────────────────────────────────────────────
+langchain-openai          # OpenAI, Cerebras, Nebius, OpenRouter, vLLM (all use OpenAI-compatible API)
+langchain-anthropic       # Anthropic
+langchain-google-genai    # Gemini
+langchain-groq            # Groq
+langchain-ollama          # Ollama (local)
+langchain-nvidia-ai-endpoints  # Nvidia
+langchain-huggingface     # HuggingFace
+langchain-openrouter      # OpenRouter (native support)
+langchain-cerebras
