@@ -82,4 +82,8 @@ ipydatagrid
 langchain-nvidia-ai-endpoints
 faiss-cpu
 # faiss-gpu
- langchain-groq
+langchain-groq
+
+qdrant-client
+langchain-qdrant
+fastembed

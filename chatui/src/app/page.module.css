@@ -1,0 +1,40 @@
+.main {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+.content {
+  flex: 1;
+  display: flex;
+  min-width: 0;
+}
+
+.center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.rightPanel {
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid var(--border-subtle);
+  background: var(--bg-secondary);
+  overflow-y: auto;
+}
+
+@media (max-width: 1200px) {
+  .rightPanel {
+    width: 280px;
+  }
+}
+
+@media (max-width: 900px) {
+  .rightPanel {
+    display: none;
+  }
+}

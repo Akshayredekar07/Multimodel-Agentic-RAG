@@ -42,3 +42,5 @@ run/__pycache__/
 run/extracted_images/
 run/*.json
 run/*.md
+
+/qdrant_storage/*
