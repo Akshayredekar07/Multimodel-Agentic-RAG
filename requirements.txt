@@ -180,6 +180,7 @@ langchain-groq
 langchain-qdrant
 
 langgraph
+langgraph-cli[inmem]
 langgraph-checkpoint-sqlite
 
 qdrant-client
