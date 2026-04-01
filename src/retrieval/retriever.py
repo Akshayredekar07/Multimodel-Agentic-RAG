@@ -18,11 +18,13 @@ def build_retrieval_tools(vectorstore):
 
     @tool
     def retrieve_text(query: str) -> str:
+        """Retrieve the most relevant text chunks for a document question."""
         hits = vectorstore.similarity_search_with_score(query, k=4)
         return _format_text_hits(hits)
 
     @tool
     def retrieve_images(query: str) -> str:
+        """Retrieve image-related results for questions about figures, diagrams, or charts."""
         hits = vectorstore.similarity_search_with_score(
             query,
             k=6,
@@ -43,6 +45,7 @@ def build_retrieval_tools(vectorstore):
 
     @tool
     def retrieve_by_type(element_type: str, query: str) -> str:
+        """Retrieve results filtered to a specific document element type."""
         hits = vectorstore.similarity_search_with_score(
             query,
             k=4,
