@@ -2,6 +2,10 @@
 
 This project combines a FastAPI backend with a Streamlit chat UI for document question answering. You can upload files, extract text, chunk content, retrieve relevant passages, and generate grounded answers with a selectable LLM provider.
 
+### Demo Video
+
+[Watch the demo video](docs/demo-vid.mp4)
+
 ### What It Does
 
 - Upload and manage documents from the Streamlit interface.

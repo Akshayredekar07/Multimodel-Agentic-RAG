@@ -45,3 +45,17 @@ run/*.md
 
 /qdrant_storage/*
 /uploaded_files/*
+
+/.langgraph_api/*
+.langgraph_api/
+/.langgraph_api
+
+agent_memory.db
+
+CONFIGURATION_AND_COMPONENTS.md
+API_REFERENCE.md
+AGENT_PIPELINE.md 
+INGESTION_AND_RETRIEVAL.md 
+docs/README.md
+SETUP.md
+FASTAPI_PIPELINE.md
